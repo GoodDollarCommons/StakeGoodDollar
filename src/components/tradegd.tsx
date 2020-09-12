@@ -45,7 +45,7 @@ export const TradeGD = () => {
 
   return (
     <Paper>
-      <NodeInfoBox
+      {/* <NodeInfoBox
         active="remote"
         network={network || "none"}
         changingNetwork={false}
@@ -55,7 +55,7 @@ export const TradeGD = () => {
           timestamp: 1599935851
         }}
         sycnMode="nosync"
-      />
+      /> */}
       <Card>
         <BigNumberInput
           decimals={18}
