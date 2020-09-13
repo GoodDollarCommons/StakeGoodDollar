@@ -46,7 +46,7 @@ enum ConnectorNames {
   Torus = "Torus"
 }
 
-const connectorsByName: { [connectorName in ConnectorNames]: any } = {
+const connectorsByName: any = {
   [ConnectorNames.Injected]: injected,
   [ConnectorNames.Network]: network,
   [ConnectorNames.WalletConnect]: walletconnect,
@@ -124,7 +124,7 @@ function BlockNumber() {
         })
         .catch(() => {
           if (!stale) {
-            setBlockNumber(null);
+            setBlockNumber(undefined);
           }
         });
 
@@ -177,7 +177,7 @@ function Account() {
 function Balance() {
   const { account, library, chainId } = useWeb3React();
 
-  const [balance, setBalance] = React.useState();
+  const [balance, setBalance] = React.useState<number>();
   React.useEffect((): any => {
     if (!!account && !!library) {
       let stale = false;
@@ -191,7 +191,7 @@ function Balance() {
         })
         .catch(() => {
           if (!stale) {
-            setBalance(null);
+            setBalance(undefined);
           }
         });
 
@@ -271,8 +271,7 @@ function App() {
 
   return (
     <>
-      <Header />
-      <TradeGD />
+      <TradeGD/>
       <hr style={{ margin: "2rem" }} />
       <div
         style={{
