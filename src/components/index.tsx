@@ -11,7 +11,6 @@ import {
 import { UserRejectedRequestError as UserRejectedRequestErrorWalletConnect } from "@web3-react/walletconnect-connector";
 import { UserRejectedRequestError as UserRejectedRequestErrorFrame } from "@web3-react/frame-connector";
 import { Web3Provider } from "@ethersproject/providers";
-import { formatEther } from "@ethersproject/units";
 
 import { useEagerConnect, useInactiveListener } from "../hooks";
 import {
@@ -27,7 +26,6 @@ import {
   squarelink,
   torus
 } from "../connectors";
-import { Spinner } from "../components/Spinner";
 import { TradeGD } from "./tradegd";
 
 enum ConnectorNames {
@@ -60,8 +58,6 @@ const connectorsByName: any = {
   [ConnectorNames.Torus]: torus
 };
 
-const isServer = () => typeof window === `undefined`;
-
 function getErrorMessage(error: Error) {
   if (error instanceof NoEthereumProviderError) {
     return "No Ethereum browser extension detected, install MetaMask on desktop or visit from a dApp browser on mobile.";
@@ -90,155 +86,6 @@ export default function () {
     <Web3ReactProvider getLibrary={getLibrary}>
       <App />
     </Web3ReactProvider>
-  );
-}
-
-function ChainId() {
-  const { chainId } = useWeb3React();
-
-  return (
-    <>
-      <span>Chain Id</span>
-      <span role="img" aria-label="chain">
-        ⛓
-      </span>
-      <span>{chainId ?? ""}</span>
-    </>
-  );
-}
-
-function BlockNumber() {
-  const { chainId, library } = useWeb3React();
-
-  const [blockNumber, setBlockNumber] = React.useState<number>();
-  React.useEffect((): any => {
-    if (!!library) {
-      let stale = false;
-
-      library
-        .getBlockNumber()
-        .then((blockNumber: number) => {
-          if (!stale) {
-            setBlockNumber(blockNumber);
-          }
-        })
-        .catch(() => {
-          if (!stale) {
-            setBlockNumber(undefined);
-          }
-        });
-
-      const updateBlockNumber = (blockNumber: number) => {
-        setBlockNumber(blockNumber);
-      };
-      library.on("block", updateBlockNumber);
-
-      return () => {
-        stale = true;
-        library.removeListener("block", updateBlockNumber);
-        setBlockNumber(undefined);
-      };
-    }
-  }, [library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
-
-  return (
-    <>
-      <span>Block Number</span>
-      <span role="img" aria-label="numbers">
-        🔢
-      </span>
-      <span>{blockNumber === null ? "Error" : blockNumber ?? ""}</span>
-    </>
-  );
-}
-
-function Account() {
-  const { account } = useWeb3React();
-
-  return (
-    <>
-      <span>Account</span>
-      <span role="img" aria-label="robot">
-        🤖
-      </span>
-      <span>
-        {account === null
-          ? "-"
-          : account
-          ? `${account.substring(0, 6)}...${account.substring(
-              account.length - 4
-            )}`
-          : ""}
-      </span>
-    </>
-  );
-}
-
-function Balance() {
-  const { account, library, chainId } = useWeb3React();
-
-  const [balance, setBalance] = React.useState<number>();
-  React.useEffect((): any => {
-    if (!!account && !!library) {
-      let stale = false;
-
-      library
-        .getBalance(account)
-        .then((balance: any) => {
-          if (!stale) {
-            setBalance(balance);
-          }
-        })
-        .catch(() => {
-          if (!stale) {
-            setBalance(undefined);
-          }
-        });
-
-      return () => {
-        stale = true;
-        setBalance(undefined);
-      };
-    }
-  }, [account, library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
-
-  return (
-    <>
-      <span>Balance</span>
-      <span role="img" aria-label="gold">
-        💰
-      </span>
-      <span>
-        {balance === null ? "Error" : balance ? `Ξ${formatEther(balance)}` : ""}
-      </span>
-    </>
-  );
-}
-
-function Header() {
-  const { active, error } = useWeb3React();
-
-  return (
-    <>
-      <h1 style={{ margin: "1rem", textAlign: "right" }}>
-        {active ? "🟢" : error ? "🔴" : "🟠"}
-      </h1>
-      <h3
-        style={{
-          display: "grid",
-          gridGap: "1rem",
-          gridTemplateColumns: "1fr min-content 1fr",
-          maxWidth: "20rem",
-          lineHeight: "2rem",
-          margin: "auto"
-        }}
-      >
-        <ChainId />
-        <BlockNumber />
-        <Account />
-        <Balance />
-      </h3>
-    </>
   );
 }
 
@@ -321,12 +168,6 @@ function App() {
                   margin: "0 0 0 1rem"
                 }}
               >
-                {activating && (
-                  <Spinner
-                    color={"black"}
-                    style={{ height: "25%", marginLeft: "-1rem" }}
-                  />
-                )}
                 {connected && (
                   <span role="img" aria-label="check">
                     ✅

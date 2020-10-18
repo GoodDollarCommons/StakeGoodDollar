@@ -1,11 +1,10 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useWeb3React } from "@web3-react/core";
-import { Card, Paper, TextField, CardHeader, CardContent, Typography, Grid, Button, CircularProgress } from "@material-ui/core";
+import { Card, Paper, TextField, CardHeader, CardContent, Grid, Button } from "@material-ui/core";
 import { BigNumberInput } from "big-number-input";
-import { NodeInfoBox, AccountItem } from "ethereum-react-components";
+import { AccountItem } from "ethereum-react-components";
 import ethers, { Contract } from "ethers";
 import tradegdABI from "../contracts/tradegd.json";
-import { LogDescription } from "ethers/lib/utils";
 
 const networks: { [key: number]: string } = {
   1: "Mainnet",
@@ -44,14 +43,11 @@ export const TradeGD = () => {
       console.log({ GD, uniswap, DAI });
     };
     getContracts();
-  }, [library]);
+  }, [library, active, tradeContract]);
 
-
-  const [inputValue, setInputValue] = useState<string>("0");
   const [buyValues, setBuyValues] = useState<any>({ eth: "0", minDai: "0", minGD: "0" });
   const [inputError, setInputError] = useState<string | void>();
-  const [currentTX, setCurrentTX] = useState<any>(); //tx in process
-  const [tradeEvent, setTradeEvent] = useState<LogDescription>(); //TradeGD event from tx result
+  const [currentTxHash, setCurrentTxHash] = useState<string>("None"); //hash of tx in process
 
   const onInputChange = useCallback((field: string) => {
     return (value: string) => {
@@ -69,18 +65,17 @@ export const TradeGD = () => {
       const gasEstimated = await tradeContract.estimateGas.buyGDFromReserve(buyValues.minDai, buyValues.minGD, { value: buyValues.eth })
 
       const tx = await tradeContract.buyGDFromReserve(buyValues.minDai, buyValues.minGD, { gasLimit: gasEstimated.toString(), value: buyValues.eth })
-      setCurrentTX(tx)
+      setCurrentTxHash("In progress...")
       const receipt = await tx.wait()
       const tradeEvent = getTradeEvent(receipt)
       const event = tradeEvent && tradegdInterface.parseLog(receipt.events)
       console.log({ tx, receipt, gasEstimated, event })
-      setTradeEvent(event)
     }
     catch (e) {
       setInputError("Transaction failed")
     }
     finally {
-      setCurrentTX(undefined)
+      setCurrentTxHash("Finished")
     }
   }
 
@@ -89,7 +84,7 @@ export const TradeGD = () => {
     <Paper>
       <Grid container justify={"center"}>
         <Card style={styles.card} raised={true}>
-          <AccountItem name="Account 1" address={account} style={{
+          <AccountItem name="Account" address={account} style={{
             padding: '2%'
           }} />
 
@@ -99,8 +94,7 @@ export const TradeGD = () => {
         </Card>
 
         <Card style={styles.card} raised={true}>
-          <CardHeader title="Pending TX" subheader={currentTX.txHash} />
-          <CircularProgress />
+          <CardHeader title="Pending TX" subheader={currentTxHash} />
         </Card>
       </Grid>
       <Grid container justify="center">
@@ -131,7 +125,7 @@ export const TradeGD = () => {
               </Grid>
               <Grid item>
                 <BigNumberInput
-                  decimals={18}
+                  decimals={2}
                   onChange={onInputChange("minGD")}
                   value={buyValues.minGD}
                   renderInput={(props: any) => (
