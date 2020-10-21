@@ -1,51 +1,56 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { useWeb3React } from "@web3-react/core";
 import { Card, Paper, TextField, CardHeader, CardContent, Grid, Button } from "@material-ui/core";
 import { BigNumberInput } from "big-number-input";
 import { AccountItem } from "ethereum-react-components";
 import ethers, { Contract } from "ethers";
-import tradegdABI from "../contracts/tradegd.json";
+import GoodReserveABI from "../contracts/GoodReserve.json";
+import ERC20ABI from "../contracts/ERC20.json";
 
 const networks: { [key: number]: string } = {
   1: "Mainnet",
-  2: "kovan",
   3: "ropsten",
-  122: "fuse"
+};
+const grAddresses: { [key: number]: string } = {
+  1: "0x5C16960F2Eeba27b7de4F1F6e84E616C1977e070",
+  3: "0x5810950BF9184F286f1C33b2cf80533D2CB274AF",
+};
+const cdaiAddresses: { [key: number]: string } = {
+  1: "0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643",
+  3: "0x6ce27497a64fffb5517aa4aee908b1e7eb63b9ff",
 };
 
-const tradegdInterface = new ethers.utils.Interface(tradegdABI.abi)
 export const TradeGD = () => {
   const { library, chainId, account, connector, active } = useWeb3React();
   const network = networks[chainId || 1];
+  const grAddress = grAddresses[chainId || 1];
+  const cdaiAddress = cdaiAddresses[chainId || 1];
+  console.log({ chainId, network, grAddress, cdaiAddress });
   const tradeContract = useMemo(
     () => {
       if (!active) return {} as Contract
       return new ethers.Contract(
-        "0x863720706e3391e17ad673f5D7A51B74528a35A9",
-        tradegdABI.abi,
+        grAddress,
+        GoodReserveABI,
         library.getSigner()
       )
     },
-    [library, active]
+    [library, active, grAddress]
   );
-  console.log({ active, connector, library, ethers, tradegdABI });
-  useEffect(() => {
-    const getContracts = async () => {
-      if (!active) return [];
-      const [GD, uniswap, DAI] = await Promise.all([
-        tradeContract.GD() as string,
-        tradeContract.uniswap() as string,
-        tradeContract.DAI() as string
-      ]).catch((e) => {
-        console.log("failed fetching network contracts", e)
-        return []
-      });
-      console.log({ GD, uniswap, DAI });
-    };
-    getContracts();
-  }, [library, active, tradeContract]);
+  console.log({ active, connector, library, ethers, GoodReserveABI });
+  const cDaiContract = useMemo(
+    () => {
+      if (!active) return {} as Contract
+      return new ethers.Contract(
+        cdaiAddress,
+        ERC20ABI,
+        library.getSigner()
+      )
+    },
+    [library, active, cdaiAddress]
+  );
 
-  const [buyValues, setBuyValues] = useState<any>({ eth: "0", minDai: "0", minGD: "0" });
+  const [buyValues, setBuyValues] = useState<any>({ minCDai: "0", minGD: "0" });
   const [inputError, setInputError] = useState<string | void>();
   const [currentTxHash, setCurrentTxHash] = useState<string>("None"); //hash of tx in process
 
@@ -56,26 +61,39 @@ export const TradeGD = () => {
     }
   }, [buyValues, setBuyValues]);
 
-  const getTradeEvent = (receipt: any) =>
-    receipt.logs.find((_: any) => _.topics.includes("0xad8e10549027a588946bc8eccabef0697a3e827043ef830aa88fad8e470fd57f"))
-
   const buyReserve = async () => {
     console.log({ buyValues })
     try {
-      const gasEstimated = await tradeContract.estimateGas.buyGDFromReserve(buyValues.minDai, buyValues.minGD, { value: buyValues.eth })
+      const gasEstimated = await tradeContract.estimateGas.buy(cdaiAddress, buyValues.minCDai, buyValues.minGD, { value: 0 })
 
-      const tx = await tradeContract.buyGDFromReserve(buyValues.minDai, buyValues.minGD, { gasLimit: gasEstimated.toString(), value: buyValues.eth })
+      const tx = await tradeContract.buy(cdaiAddress, buyValues.minCDai, buyValues.minGD, { gasLimit: gasEstimated.toString(), value: 0 })
       setCurrentTxHash("In progress...")
       const receipt = await tx.wait()
-      const tradeEvent = getTradeEvent(receipt)
-      const event = tradeEvent && tradegdInterface.parseLog(receipt.events)
-      console.log({ tx, receipt, gasEstimated, event })
+      console.log({ tx, receipt, gasEstimated })
     }
     catch (e) {
       setInputError("Transaction failed")
     }
     finally {
       setCurrentTxHash("Finished")
+    }
+  }
+  
+  const unlockCDai = async () => {
+    console.log({ buyValues })
+    try {
+      const gasEstimated = await cDaiContract.estimateGas.approve(grAddress, buyValues.minCDai, { value: 0 })
+
+      const tx = await cDaiContract.approve(grAddress, buyValues.minCDai, { gasLimit: gasEstimated.toString(), value: 0 })
+      setCurrentTxHash("In progress...")
+      const receipt = await tx.wait()
+      console.log({ tx, receipt, gasEstimated })
+    }
+    catch (e) {
+      setInputError("Transaction failed")
+    }
+    finally {
+      setCurrentTxHash("Unlocked")
     }
   }
 
@@ -99,27 +117,16 @@ export const TradeGD = () => {
       </Grid>
       <Grid container justify="center">
         <Card style={{ ...styles.card, height: 'auto' }} raised={true}>
-          <CardHeader title="Buy G$ with ETH from Reserve" subheader="Will convert ETH->DAI->cDAI->GD" />
+          <CardHeader title="Buy G$ with cDAI from Reserve" subheader="Need to unlock cDAI first" />
           <CardContent>
             <Grid container direction='column'>
               <Grid item>
-
                 <BigNumberInput
-                  decimals={18}
-                  onChange={onInputChange("eth")}
-                  value={buyValues.eth}
+                  decimals={8}
+                  onChange={onInputChange("minCDai")}
+                  value={buyValues.minCDai}
                   renderInput={(props: any) => (
-                    <TextField style={{ width: '100%' }} label="ETH Amount" meta={{ error: inputError }} {...props} />
-                  )}
-                />
-              </Grid>
-              <Grid item>
-                <BigNumberInput
-                  decimals={18}
-                  onChange={onInputChange("minDai")}
-                  value={buyValues.minDai}
-                  renderInput={(props: any) => (
-                    <TextField label="min DAI return" helperText="prevent front running, minimum expected amount of DAI from uniswap otherwise revert tx" meta={{ error: inputError }} {...props} />
+                    <TextField label="min cDAI used" helperText="minimum expected amount of cDAI used by GoodReserve" meta={{ error: inputError }} {...props} />
                   )}
                 />
               </Grid>
@@ -133,6 +140,11 @@ export const TradeGD = () => {
                   )}
                 />
 
+              </Grid>
+              <Grid item>
+                <Button variant="contained" color="primary" style={{ margin: '5%' }} onClick={unlockCDai}>
+                  Unlock
+                </Button>
               </Grid>
               <Grid item>
                 <Button variant="contained" color="primary" style={{ margin: '5%' }} onClick={buyReserve}>
