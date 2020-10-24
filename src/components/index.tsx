@@ -119,7 +119,7 @@ function App() {
   return (
     <>
       <TradeGD/>
-      <hr style={{ margin: "2rem" }} />
+      <hr style={{ margin: "1rem" }} />
       <div
         style={{
           display: "grid",
@@ -210,7 +210,7 @@ function App() {
         )}
       </div>
 
-      <hr style={{ margin: "2rem" }} />
+      <hr style={{ margin: "1rem" }} />
 
       <div
         style={{
