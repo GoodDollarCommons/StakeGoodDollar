@@ -2,7 +2,7 @@
   "manifestVersion": "2.2",
   "contracts": {},
   "dependencies": {},
-  "name": "tradegooddollar",
+  "name": "stakegooddollar",
   "version": "1.0.0",
   "compiler": {
     "compilerSettings": {

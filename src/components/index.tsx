@@ -26,7 +26,7 @@ import {
   squarelink,
   torus
 } from "../connectors";
-import { TradeGD } from "./tradegd";
+import { StakeGD } from "./stakegd";
 
 enum ConnectorNames {
   Injected = "Injected",
@@ -118,7 +118,7 @@ function App() {
 
   return (
     <>
-      <TradeGD/>
+      <StakeGD/>
       <hr style={{ margin: "1rem" }} />
       <div
         style={{

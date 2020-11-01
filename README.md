@@ -1,7 +1,11 @@
-# TradeGoodDollar
-1. Fill how many cDAI you want to spend, and the minimum of G$ you expect to receive. You can base your expectation on Uniswap price.
+# StakeGoodDollar
+WORK IN PROGRESS AND NOT USABLE YET
+0. Click on the grey button corresponding to your wallet provider. MetaMask is part of Injected.
+1. Fill how many DAI you want to stake.
 2. Click on UNLOCK button and accept the approval request. Wait for the status of Pending TX at the top to be Unlocked.
-3. Click on BUY button, if it doesn't propose a transaction then it's because it is detecting it would fail so lower you minimum of G$ expected and retry.
-4. When you have accepted the transaction, wait for it to finish and you will receive G$ at the price visible in the [smart contract](https://etherscan.io/readContract?m=normal&a=0x5C16960F2Eeba27b7de4F1F6e84E616C1977e070&v=0x5C16960F2Eeba27b7de4F1F6e84E616C1977e070#readCollapse5) after entering 0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643 in _token and clicking on Query.
+3. Click on STAKE button, if it doesn't propose a transaction then let me know.
+4. When you have accepted the transaction, wait for it to finish.
+ 
+ If you want to see in more details you can look in the [smart contract](https://etherscan.io/readContract?m=normal&a=0xEa12bB3917cf6aE2FDE97cE4756177703426d41F&v=0xEa12bB3917cf6aE2FDE97cE4756177703426d41F#readCollapse17) after entering your Ethereum address in the input field and clicking on Query.
 
 I will make it more usable soon in a new version.

@@ -4,69 +4,69 @@ import { Card, Paper, TextField, CardHeader, CardContent, Grid, Button } from "@
 import { BigNumberInput } from "big-number-input";
 import { AccountItem } from "ethereum-react-components";
 import ethers, { Contract } from "ethers";
-import GoodReserveABI from "../contracts/GoodReserve.json";
+import GoodStakingABI from "../contracts/GoodStaking.json";
 import ERC20ABI from "../contracts/ERC20.json";
 
 const networks: { [key: number]: string } = {
   1: "Mainnet",
-  3: "ropsten",
+  3: "Ropsten",
 };
-const grAddresses: { [key: number]: string } = {
-  1: "0x5C16960F2Eeba27b7de4F1F6e84E616C1977e070",
-  3: "0x5810950BF9184F286f1C33b2cf80533D2CB274AF",
+const gsAddresses: { [key: number]: string } = {
+  1: "0xEa12bB3917cf6aE2FDE97cE4756177703426d41F",
+  3: "0xE6876231d1a5905Abed03E4C613E427b0357ec0b",
 };
-const cdaiAddresses: { [key: number]: string } = {
-  1: "0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643",
-  3: "0x6ce27497a64fffb5517aa4aee908b1e7eb63b9ff",
+const daiAddresses: { [key: number]: string } = {
+  1: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+  3: "0xB5E5D0F8C0cbA267CD3D7035d6AdC8eBA7Df7Cdd",
 };
 
-export const TradeGD = () => {
+export const StakeGD = () => {
   const { library, chainId, account, connector, active } = useWeb3React();
   const network = networks[chainId || 1];
-  const grAddress = grAddresses[chainId || 1];
-  const cdaiAddress = cdaiAddresses[chainId || 1];
-  console.log({ chainId, network, grAddress, cdaiAddress });
-  const tradeContract = useMemo(
+  const gsAddress = gsAddresses[chainId || 1];
+  const daiAddress = daiAddresses[chainId || 1];
+  console.log({ chainId, network, gsAddress, daiAddress });
+  const stakeContract = useMemo(
     () => {
       if (!active) return {} as Contract
       return new ethers.Contract(
-        grAddress,
-        GoodReserveABI,
+        gsAddress,
+        GoodStakingABI,
         library.getSigner()
       )
     },
-    [library, active, grAddress]
+    [library, active, gsAddress]
   );
-  console.log({ active, connector, library, ethers, GoodReserveABI });
-  const cDaiContract = useMemo(
+  console.log({ active, connector, library, ethers, GoodStakingABI });
+  const daiContract = useMemo(
     () => {
       if (!active) return {} as Contract
       return new ethers.Contract(
-        cdaiAddress,
+        daiAddress,
         ERC20ABI,
         library.getSigner()
       )
     },
-    [library, active, cdaiAddress]
+    [library, active, daiAddress]
   );
 
-  const [buyValues, setBuyValues] = useState<any>({ minCDai: "0", minGD: "0" });
+  const [stakeValues, setStakeValues] = useState<any>({ minDai: "0" });
   const [inputError, setInputError] = useState<string | void>();
   const [currentTxHash, setCurrentTxHash] = useState<string>("None"); //hash of tx in process
 
   const onInputChange = useCallback((field: string) => {
     return (value: string) => {
 
-      setBuyValues({ ...buyValues, [field]: value })
+      setStakeValues({ ...stakeValues, [field]: value })
     }
-  }, [buyValues, setBuyValues]);
+  }, [stakeValues, setStakeValues]);
 
-  const buyReserve = async () => {
-    console.log({ buyValues })
+  const stakeSimple = async () => {
+    console.log({ stakeValues })
     try {
-      const gasEstimated = await tradeContract.estimateGas.buy(cdaiAddress, buyValues.minCDai, buyValues.minGD, { value: 0 })
+      const gasEstimated = await stakeContract.estimateGas.stakeDAI(stakeValues.minDai, { value: 0 })
 
-      const tx = await tradeContract.buy(cdaiAddress, buyValues.minCDai, buyValues.minGD, { gasLimit: gasEstimated.toString(), value: 0 })
+      const tx = await stakeContract.stakeDAI(stakeValues.minDai, { gasLimit: gasEstimated.toString(), value: 0 })
       setCurrentTxHash("In progress...")
       const receipt = await tx.wait()
       console.log({ tx, receipt, gasEstimated })
@@ -79,12 +79,12 @@ export const TradeGD = () => {
     }
   }
   
-  const unlockCDai = async () => {
-    console.log({ buyValues })
+  const unlockDai = async () => {
+    console.log({ stakeValues })
     try {
-      const gasEstimated = await cDaiContract.estimateGas.approve(grAddress, buyValues.minCDai, { value: 0 })
+      const gasEstimated = await daiContract.estimateGas.approve(gsAddress, stakeValues.minDai, { value: 0 })
 
-      const tx = await cDaiContract.approve(grAddress, buyValues.minCDai, { gasLimit: gasEstimated.toString(), value: 0 })
+      const tx = await daiContract.approve(gsAddress, stakeValues.minDai, { gasLimit: gasEstimated.toString(), value: 0 })
       setCurrentTxHash("In progress...")
       const receipt = await tx.wait()
       console.log({ tx, receipt, gasEstimated })
@@ -117,38 +117,27 @@ export const TradeGD = () => {
       </Grid>
       <Grid container justify="center">
         <Card style={{ ...styles.card, height: 'auto' }} raised={true}>
-          <CardHeader title="Buy G$ with cDAI from Reserve" subheader="Need to unlock cDAI first" />
+          <CardHeader title="Stake DAI in GoodStaking" subheader="Need to unlock DAI first" />
           <CardContent>
             <Grid container direction='column'>
               <Grid item>
                 <BigNumberInput
                   decimals={8}
-                  onChange={onInputChange("minCDai")}
-                  value={buyValues.minCDai}
+                  onChange={onInputChange("minDai")}
+                  value={stakeValues.minDai}
                   renderInput={(props: any) => (
-                    <TextField label="min cDAI used" helperText="minimum expected amount of cDAI used by GoodReserve" meta={{ error: inputError }} {...props} />
+                    <TextField label="min DAI used" helperText="maximum expected amount of DAI used by GoodStaking" meta={{ error: inputError }} {...props} />
                   )}
                 />
               </Grid>
               <Grid item>
-                <BigNumberInput
-                  decimals={2}
-                  onChange={onInputChange("minGD")}
-                  value={buyValues.minGD}
-                  renderInput={(props: any) => (
-                    <TextField label="min GD return" helperText="prevent front running, minimum expected amount of G$ from reserve otherwise revert tx" meta={{ error: inputError }} {...props} />
-                  )}
-                />
-
-              </Grid>
-              <Grid item>
-                <Button variant="contained" color="primary" style={{ margin: '5%' }} onClick={unlockCDai}>
+                <Button variant="contained" color="primary" style={{ margin: '5%' }} onClick={unlockDai}>
                   Unlock
                 </Button>
               </Grid>
               <Grid item>
-                <Button variant="contained" color="primary" style={{ margin: '5%' }} onClick={buyReserve}>
-                  Buy
+                <Button variant="contained" color="primary" style={{ margin: '5%' }} onClick={stakeSimple}>
+                  Stake
                 </Button>
               </Grid>
             </Grid>
