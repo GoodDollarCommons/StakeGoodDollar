@@ -2,12 +2,12 @@
   {
     "inputs": [
       {
-        "internalType": "contract ERC20",
+        "internalType": "address",
         "name": "_dai",
         "type": "address"
       },
       {
-        "internalType": "contract cERC20",
+        "internalType": "address",
         "name": "_cDai",
         "type": "address"
       },
@@ -15,6 +15,11 @@
         "internalType": "address",
         "name": "_fundManager",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_blockInterval",
+        "type": "uint256"
       },
       {
         "internalType": "contract Avatar",
@@ -25,21 +30,6 @@
         "internalType": "contract Identity",
         "name": "_identity",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_marketMaker",
-        "type": "address"
-      },
-      {
-        "internalType": "contract ContributionCalc",
-        "name": "_contribution",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_blockInterval",
-        "type": "uint256"
       }
     ],
     "payable": false,
@@ -52,23 +42,73 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "caller",
+        "name": "staker",
         "type": "address"
       },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "prevAddress",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "daiValue",
+        "type": "uint256"
       },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "newAddress",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "daiActual",
+        "type": "uint256"
       }
     ],
-    "name": "ContributionAddressUpdated",
+    "name": "DAIStakeWithdraw",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "staker",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "daiValue",
+        "type": "uint256"
+      }
+    ],
+    "name": "DAIStaked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "cdaiValue",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "daiValue",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "daiPrecisionLoss",
+        "type": "uint256"
+      }
+    ],
+    "name": "InterestCollected",
     "type": "event"
   },
   {
@@ -94,19 +134,13 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "by",
-        "type": "address"
-      },
-      {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "time",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
       }
     ],
-    "name": "SchemeEnded",
+    "name": "Paused",
     "type": "event"
   },
   {
@@ -115,17 +149,11 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "by",
+        "name": "account",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "time",
-        "type": "uint256"
       }
     ],
-    "name": "SchemeStarted",
+    "name": "PauserAdded",
     "type": "event"
   },
   {
@@ -134,128 +162,55 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "caller",
+        "name": "account",
         "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "reserveToken",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "reserveAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "minReturn",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "actualReturn",
-        "type": "uint256"
       }
     ],
-    "name": "TokenPurchased",
+    "name": "PauserRemoved",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "address",
-        "name": "caller",
+        "name": "account",
         "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "reserveToken",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "gdAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "contributionAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "minReturn",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "actualReturn",
-        "type": "uint256"
       }
     ],
-    "name": "TokenSold",
+    "name": "Unpaused",
     "type": "event"
   },
   {
-    "anonymous": false,
+    "constant": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "day",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
         "internalType": "address",
-        "name": "interestToken",
+        "name": "account",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "interestReceived",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "gdInterestMinted",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "gdExpansionMinted",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "gdInterestTransferred",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "gdUbiTransferred",
-        "type": "uint256"
       }
     ],
-    "name": "UBIMinted",
-    "type": "event"
+    "name": "addPauser",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "avgInterestDonatedRatio",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "constant": true,
@@ -270,37 +225,6 @@
     ],
     "payable": false,
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "contract ERC20",
-        "name": "_buyWith",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_tokenAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_minReturn",
-        "type": "uint256"
-      }
-    ],
-    "name": "buy",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -321,7 +245,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "canMint",
+    "name": "canCollect",
     "outputs": [
       {
         "internalType": "bool",
@@ -334,14 +258,50 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "contribution",
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_recipient",
+        "type": "address"
+      }
+    ],
+    "name": "collectUBIInterest",
     "outputs": [
       {
-        "internalType": "contract ContributionCalc",
+        "internalType": "uint256",
         "name": "",
-        "type": "address"
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "currentDAIWorth",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -350,15 +310,19 @@
   },
   {
     "constant": true,
-    "inputs": [
-      {
-        "internalType": "contract ERC20",
-        "name": "_token",
-        "type": "address"
-      }
-    ],
-    "name": "currentPrice",
+    "inputs": [],
+    "name": "currentUBIInterest",
     "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "",
@@ -426,7 +390,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "isActive",
+    "name": "isOwner",
     "outputs": [
       {
         "internalType": "bool",
@@ -440,8 +404,14 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "isOwner",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "isPauser",
     "outputs": [
       {
         "internalType": "bool",
@@ -492,7 +462,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "lastMinted",
+    "name": "lastUBICollection",
     "outputs": [
       {
         "internalType": "uint256",
@@ -502,57 +472,6 @@
     ],
     "payable": false,
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "marketMaker",
-    "outputs": [
-      {
-        "internalType": "contract GoodMarketMaker",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "contract ERC20",
-        "name": "_interestToken",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_transfered",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_interest",
-        "type": "uint256"
-      }
-    ],
-    "name": "mintInterestAndUBI",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -571,29 +490,23 @@
     "type": "function"
   },
   {
-    "constant": true,
+    "constant": false,
     "inputs": [],
-    "name": "periodEnd",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "name": "pause",
+    "outputs": [],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "constant": true,
     "inputs": [],
-    "name": "periodStart",
+    "name": "paused",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bool",
         "name": "",
-        "type": "uint256"
+        "type": "bool"
       }
     ],
     "payable": false,
@@ -626,31 +539,9 @@
   },
   {
     "constant": false,
-    "inputs": [
-      {
-        "internalType": "contract ERC20",
-        "name": "_sellTo",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_gdAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_minReturn",
-        "type": "uint256"
-      }
-    ],
-    "name": "sell",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "inputs": [],
+    "name": "renouncePauser",
+    "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
@@ -665,36 +556,6 @@
       }
     ],
     "name": "setAvatar",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_blockInterval",
-        "type": "uint256"
-      }
-    ],
-    "name": "setBlockInterval",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_contribution",
-        "type": "address"
-      }
-    ],
-    "name": "setContributionAddress",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -734,15 +595,41 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_marketMaker",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
       }
     ],
-    "name": "setMarketMaker",
+    "name": "stakeDAI",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "stakers",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "stakedDAI",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastStake",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -755,6 +642,21 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "totalStaked",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -764,6 +666,24 @@
       }
     ],
     "name": "transferOwnership",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "unpause",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "withdrawStake",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

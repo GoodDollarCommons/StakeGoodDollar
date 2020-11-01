@@ -1,8 +1,21 @@
 {
   "name": "stakegooddollar",
   "version": "1.0.0",
-  "description": "",
-  "keywords": [],
+  "description": "Stake DAI in GoodDollar",
+  "keywords": [
+    "UBI",
+    "basic",
+    "income",
+    "gooddollar",
+    "ethereum",
+    "stake"
+  ],
+  "author": "Bertrand Juglas <good@juglas.name>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GoodDollarCommons/StakeGoodDollar/issues"
+  },
+  "homepage": "https://www.goodstake.xyz/",
   "main": "src/index.tsx",
   "dependencies": {
     "@ethersproject/providers": "^5.0.2",

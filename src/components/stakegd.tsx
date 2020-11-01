@@ -50,9 +50,9 @@ export const StakeGD = () => {
     [library, active, daiAddress]
   );
 
-  const [stakeValues, setStakeValues] = useState<any>({ minDai: "0" });
+  const [stakeValues, setStakeValues] = useState<any>({ maxDai: "0" });
   const [inputError, setInputError] = useState<string | void>();
-  const [currentTxHash, setCurrentTxHash] = useState<string>("None"); //hash of tx in process
+  const [currentTxHash, setCurrentTxHash] = useState<string>("None"); //status of tx in process
 
   const onInputChange = useCallback((field: string) => {
     return (value: string) => {
@@ -64,9 +64,8 @@ export const StakeGD = () => {
   const stakeSimple = async () => {
     console.log({ stakeValues })
     try {
-      const gasEstimated = await stakeContract.estimateGas.stakeDAI(stakeValues.minDai, { value: 0 })
-
-      const tx = await stakeContract.stakeDAI(stakeValues.minDai, { gasLimit: gasEstimated.toString(), value: 0 })
+      const gasEstimated = await stakeContract.estimateGas.stakeDAI(stakeValues.maxDai, { value: 0 })
+      const tx = await stakeContract.stakeDAI(stakeValues.maxDai, { gasLimit: gasEstimated.toString(), value: 0 })
       setCurrentTxHash("In progress...")
       const receipt = await tx.wait()
       console.log({ tx, receipt, gasEstimated })
@@ -82,9 +81,8 @@ export const StakeGD = () => {
   const unlockDai = async () => {
     console.log({ stakeValues })
     try {
-      const gasEstimated = await daiContract.estimateGas.approve(gsAddress, stakeValues.minDai, { value: 0 })
-
-      const tx = await daiContract.approve(gsAddress, stakeValues.minDai, { gasLimit: gasEstimated.toString(), value: 0 })
+      const gasEstimated = await daiContract.estimateGas.approve(gsAddress, stakeValues.maxDai, { value: 0 })
+      const tx = await daiContract.approve(gsAddress, stakeValues.maxDai, { gasLimit: gasEstimated.toString(), value: 0 })
       setCurrentTxHash("In progress...")
       const receipt = await tx.wait()
       console.log({ tx, receipt, gasEstimated })
@@ -122,11 +120,11 @@ export const StakeGD = () => {
             <Grid container direction='column'>
               <Grid item>
                 <BigNumberInput
-                  decimals={8}
-                  onChange={onInputChange("minDai")}
-                  value={stakeValues.minDai}
+                  decimals={18}
+                  onChange={onInputChange("maxDai")}
+                  value={stakeValues.maxDai}
                   renderInput={(props: any) => (
-                    <TextField label="min DAI used" helperText="maximum expected amount of DAI used by GoodStaking" meta={{ error: inputError }} {...props} />
+                    <TextField label="max DAI used" helperText="maximum expected amount of DAI used by GoodStaking" meta={{ error: inputError }} {...props} />
                   )}
                 />
               </Grid>
