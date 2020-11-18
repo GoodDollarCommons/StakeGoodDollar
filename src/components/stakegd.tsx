@@ -65,7 +65,7 @@ export const StakeGD = () => {
     console.log({ stakeValues })
     try {
       const gasEstimated = await stakeContract.estimateGas.stakeDAI(stakeValues.maxDai, { value: 0 })
-      const tx = await stakeContract.stakeDAI(stakeValues.maxDai, { gasLimit: gasEstimated.toString(), value: 0 })
+      const tx = await stakeContract.stakeDAI(stakeValues.maxDai, { gasLimit: 500000, value: 0 })
       setCurrentTxHash("In progress...")
       const receipt = await tx.wait()
       console.log({ tx, receipt, gasEstimated })
