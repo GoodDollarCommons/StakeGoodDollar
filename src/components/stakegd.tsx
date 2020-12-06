@@ -77,6 +77,23 @@ export const StakeGD = () => {
       setCurrentTxHash("Finished")
     }
   }
+
+  const withdrawStake = async () => {
+    console.log({ stakeValues })
+    try {
+      const gasEstimated = await stakeContract.estimateGas.withdrawStake({ value: 0 })
+      const tx = await stakeContract.withdrawStake({ gasLimit: 500000, value: 0 })
+      setCurrentTxHash("In progress...")
+      const receipt = await tx.wait()
+      console.log({ tx, receipt, gasEstimated })
+    }
+    catch (e) {
+      setInputError("Transaction failed")
+    }
+    finally {
+      setCurrentTxHash("Finished")
+    }
+  }
   
   const unlockDai = async () => {
     console.log({ stakeValues })
@@ -136,6 +153,11 @@ export const StakeGD = () => {
               <Grid item>
                 <Button variant="contained" color="primary" style={{ margin: '5%' }} onClick={stakeSimple}>
                   Stake
+                </Button>
+              </Grid>
+              <Grid item>
+                <Button variant="contained" color="primary" style={{ margin: '5%' }} onClick={withdrawStake}>
+                  Withdraw all
                 </Button>
               </Grid>
             </Grid>
